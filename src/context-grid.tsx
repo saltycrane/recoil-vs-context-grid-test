@@ -1,25 +1,27 @@
 import produce, { Draft } from "immer";
 import React, { Dispatch, createContext, useContext, useReducer } from "react";
 
-import { TDirection, TXYCoords } from "./types";
-import { isXYEqual } from "./utils";
+import Cell from "./Cell";
+import { TCellMode, TDirection, TXYCoords } from "./types";
 
 /**
  * Types
  */
 type TAction =
+  | { type: "blur_cell"; xy: TXYCoords }
   | { type: "click_cell"; xy: TXYCoords }
+  | { type: "double_click_cell"; xy: TXYCoords }
   | { type: "key_down_cell"; key: string; xy: TXYCoords };
 
 type TState = {
   activeCell: {
-    mode: "active" | null;
+    mode: TCellMode | null;
     xy: TXYCoords | null;
   };
 };
 
 /**
- *
+ * ContextGrid
  */
 type TGridProps = {
   children: React.ReactNode;
@@ -45,36 +47,30 @@ export function ContextGrid({ children, colCount }: TGridProps) {
 }
 
 /**
- *
+ * ContextCell
  */
 type TCellProps = {
-  children: React.ReactNode;
+  value: number;
   xy: TXYCoords;
 };
 
-export function ContextCell({ children, xy }: TCellProps) {
+export function ContextCell({ value, xy }: TCellProps) {
   const dispatch = useContext(DispatchContext);
   const { activeCell } = useContext(StateContext);
   const cellMode = isXYEqual(activeCell.xy, xy) ? activeCell.mode : null;
-  const style =
-    cellMode === "active"
-      ? { outline: "2px solid blue", zIndex: 1 }
-      : { outline: "1px solid #ccc" };
+
   return (
-    <div
+    <Cell
+      cellMode={cellMode}
+      onBlur={() => dispatch({ type: "blur_cell", xy })}
       onClick={() => dispatch({ type: "click_cell", xy })}
-      onKeyDown={(event) =>
-        dispatch({ type: "key_down_cell", key: event.key, xy })
-      }
-      style={{
-        backgroundColor: "white",
-        padding: ".25rem",
-        ...style,
+      onDoubleClick={() => dispatch({ type: "double_click_cell", xy })}
+      onKeyDown={(event) => {
+        event.preventDefault();
+        dispatch({ type: "key_down_cell", key: event.key, xy });
       }}
-      tabIndex={0}
-    >
-      {children}
-    </div>
+      value={value}
+    />
   );
 }
 
@@ -87,14 +83,26 @@ const initialState: TState = {
     xy: null,
   },
 };
+
 const reducer = produce(
   (draft: Draft<TState>, action: TAction): TState => {
     switch (action.type) {
+      case "blur_cell":
+        if (isXYEqual(draft.activeCell.xy, action.xy)) {
+          draft.activeCell.mode = null;
+        }
+        return;
       case "click_cell":
+        // clicking on the active cell does nothing
+        // (prevent exiting "editing" mode by clicking on it)
         if (isXYEqual(draft.activeCell.xy, action.xy)) {
           return;
         }
         draft.activeCell.mode = "active";
+        draft.activeCell.xy = action.xy;
+        return;
+      case "double_click_cell":
+        draft.activeCell.mode = "editing";
         draft.activeCell.xy = action.xy;
         return;
       case "key_down_cell": {
@@ -121,7 +129,7 @@ const reducer = produce(
 /**
  * move the active cell left, right, down, or up
  */
-const move = (draft: Draft<TState>, direction: TDirection) => {
+function move(draft: Draft<TState>, direction: TDirection) {
   const [x, y] = draft.activeCell.xy;
   draft.activeCell.mode = "active";
   switch (direction) {
@@ -139,7 +147,17 @@ const move = (draft: Draft<TState>, direction: TDirection) => {
       break;
   }
   return draft;
-};
+}
+
+/**
+ * isXYEqual
+ */
+function isXYEqual(xy1: TXYCoords | null, xy2: TXYCoords | null) {
+  if (xy1 === null && xy2 === null) {
+    throw new Error("Unexpected args are both null (null, null)");
+  }
+  return xy1 && xy2 && xy1[0] === xy2[0] && xy1[1] === xy2[1];
+}
 
 /**
  * Context

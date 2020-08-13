@@ -1,20 +1,23 @@
-import { RecoilRoot, atom, useRecoilState, useRecoilValue } from "recoil";
+import React from "react";
+import {
+  RecoilRoot,
+  useRecoilState,
+  atomFamily,
+  useSetRecoilState,
+} from "recoil";
 
-import { TDirection, TXYCoords } from "./types";
-import { isXYEqual } from "./utils";
+import Cell from "./Cell";
+import { TCellMode, TDirection, TXYCoords } from "./types";
 
 /**
  * Types
  */
-type TActiveCellState = {
-  mode: TMode | null;
-  xy: TXYCoords | null;
+type TCellState = {
+  mode: TCellMode | null;
 };
 
-type TMode = "active";
-
 /**
- *
+ * RecoilGrid
  */
 type TGridProps = {
   children: React.ReactNode;
@@ -37,100 +40,81 @@ export function RecoilGrid({ children, colCount }: TGridProps) {
 }
 
 /**
- *
+ * RecoilCell
  */
 type TCellProps = {
-  children: React.ReactNode;
+  value: number;
   xy: TXYCoords;
 };
 
-export function RecoilCell({ children, xy }: TCellProps) {
-  const [activeCell, setActiveCell] = useRecoilState(activeCellState);
-  const keyDownCell = useKeyDownCell();
-  const cellMode = isXYEqual(activeCell.xy, xy) ? activeCell.mode : null;
-  const style =
-    cellMode === "active"
-      ? { outline: "2px solid blue", zIndex: 1 }
-      : { outline: "1px solid #ccc" };
+export function RecoilCell({ value, xy }: TCellProps) {
+  const [cell, setCell] = useRecoilState(cellFamily(xy));
+  const moveActiveCell = useMoveActiveCell(xy);
+
   return (
-    <div
-      onClick={() => setActiveCell({ mode: "active", xy })}
-      onKeyDown={(event) => keyDownCell(event.key)}
-      style={{
-        backgroundColor: "white",
-        padding: ".25rem",
-        ...style,
+    <Cell
+      cellMode={cell.mode}
+      onBlur={() => setCell({ mode: null })}
+      onClick={() => {
+        setCell((cell) => {
+          // clicking on the active cell does nothing
+          // (prevent exiting "editing" mode by clicking on it)
+          if (cell.mode) {
+            return cell;
+          }
+          return { mode: "active" };
+        });
       }}
-      tabIndex={0}
-    >
-      {children}
-    </div>
+      onDoubleClick={() => setCell({ mode: "editing" })}
+      onKeyDown={(event) => {
+        event.preventDefault();
+        const KEY_TO_DIRECTION = {
+          ArrowDown: "down",
+          ArrowLeft: "left",
+          ArrowRight: "right",
+          ArrowUp: "up",
+        };
+        moveActiveCell(KEY_TO_DIRECTION[event.key]);
+      }}
+      value={value}
+    />
   );
 }
 
 /**
  * Atoms
  */
-const activeCellState = atom<TActiveCellState>({
-  key: "activeCellState",
+const cellFamily = atomFamily<TCellState, TXYCoords>({
+  key: "cell",
   default: {
     mode: null,
-    xy: null,
   },
 });
 
 /**
- * Fake actions
- */
-const useKeyDownCell = () => {
-  const [activeCell, setActiveCell] = useRecoilState(activeCellState);
-  const { xy } = activeCell;
-
-  const keyDownCell = (key: string) => {
-    let newMode: TMode = "active";
-    let newXY: TXYCoords = xy;
-    switch (key) {
-      case "ArrowDown":
-        newXY = move(xy, "down");
-        break;
-      case "ArrowLeft":
-        newXY = move(xy, "left");
-        break;
-      case "ArrowRight":
-        newXY = move(xy, "right");
-        break;
-      case "ArrowUp":
-        newXY = move(xy, "up");
-        break;
-      default:
-        // key not handled
-        return;
-    }
-    setActiveCell({ mode: newMode, xy: newXY });
-  };
-
-  return keyDownCell;
-};
-
-/**
  * Helpers
  */
-const move = (xy: TXYCoords, direction: TDirection) => {
+function useMoveActiveCell(xy: TXYCoords) {
   const [x, y] = xy;
-  let newXY: TXYCoords;
-  switch (direction) {
-    case "down":
-      newXY = [x, y + 1];
-      break;
-    case "left":
-      newXY = [x - 1, y];
-      break;
-    case "right":
-      newXY = [x + 1, y];
-      break;
-    case "up":
-      newXY = [x, y - 1];
-      break;
-  }
-  return newXY;
-};
+  const setAboveCell = useSetRecoilState(cellFamily([x, y - 1]));
+  const setRightCell = useSetRecoilState(cellFamily([x + 1, y]));
+  const setBelowCell = useSetRecoilState(cellFamily([x, y + 1]));
+  const setLeftCell = useSetRecoilState(cellFamily([x - 1, y]));
+
+  return (direction: TDirection) => {
+    switch (direction) {
+      case "down":
+        setBelowCell({ mode: "active" });
+        return;
+      case "left":
+        setLeftCell({ mode: "active" });
+        return;
+      case "right":
+        setRightCell({ mode: "active" });
+        return;
+      case "up":
+        setAboveCell({ mode: "active" });
+        return;
+    }
+  };
+}

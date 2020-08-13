@@ -1,6 +1,6 @@
 import React from "react";
 
-const Index = () => {
+export default function Index() {
   return (
     <ul>
       <li>
@@ -11,6 +11,4 @@ const Index = () => {
       </li>
     </ul>
   );
-};
-
-export default Index;
+}
