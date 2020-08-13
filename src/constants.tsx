@@ -1,2 +1,2 @@
-export const X_COUNT = 10;
-export const Y_COUNT = 1000;
+export const X_COUNT = 20;
+export const Y_COUNT = 100;
