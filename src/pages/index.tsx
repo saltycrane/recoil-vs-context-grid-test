@@ -1,5 +1,13 @@
 import React from "react";
 
-const Home = () => <div>Home</div>;
+const Index = () => {
+  return (
+    <ul>
+      <li>
+        <a href="/context-test">Grid test with React Context</a>
+      </li>
+    </ul>
+  );
+};
 
-export default Home;
+export default Index;
