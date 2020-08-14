@@ -2,7 +2,7 @@
 
 # forked from https://gist.github.com/motemen/8595451
 
-set -e
+set -eux
 
 remote=$(git config remote.origin.url)
 described_rev=$(git rev-parse HEAD | git name-rev --stdin)
@@ -21,6 +21,7 @@ cdup=$(git rev-parse --show-cdup)
 if [ "$cdup" != '' ]
 then
     git init
+    git config user.email saltycrane@gmail.com
     git remote add --fetch origin "$remote"
 fi
 
