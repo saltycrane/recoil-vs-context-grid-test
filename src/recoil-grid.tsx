@@ -67,12 +67,13 @@ export function RecoilCell({ value, xy }: TCellProps) {
       }}
       onDoubleClick={() => setCell({ mode: "editing" })}
       onKeyDown={(event) => {
-        event.preventDefault();
         const KEY_TO_DIRECTION = {
           ArrowDown: "down",
           ArrowLeft: "left",
           ArrowRight: "right",
           ArrowUp: "up",
+          Enter: "down",
+          Tab: "right",
         };
         moveActiveCell(KEY_TO_DIRECTION[event.key]);
       }}

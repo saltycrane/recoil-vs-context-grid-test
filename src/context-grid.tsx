@@ -66,7 +66,6 @@ export function ContextCell({ value, xy }: TCellProps) {
       onClick={() => dispatch({ type: "click_cell", xy })}
       onDoubleClick={() => dispatch({ type: "double_click_cell", xy })}
       onKeyDown={(event) => {
-        event.preventDefault();
         dispatch({ type: "key_down_cell", key: event.key, xy });
       }}
       value={value}
@@ -108,12 +107,14 @@ const reducer = produce(
       case "key_down_cell": {
         switch (action.key) {
           case "ArrowDown":
+          case "Enter":
             draft = move(draft, "down");
             return;
           case "ArrowLeft":
             draft = move(draft, "left");
             return;
           case "ArrowRight":
+          case "Tab":
             draft = move(draft, "right");
             return;
           case "ArrowUp":
