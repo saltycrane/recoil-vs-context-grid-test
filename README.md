@@ -1,6 +1,6 @@
 # recoil-vs-context-grid-test
 
-This is an attempt to compare performance of a spreadsheet-like grid when using React Context vs. the [Recoil](https://recoiljs.org/) library for state management.
+This is an attempt to compare performance of a spreadsheet-like grid when using React Context vs. the [Recoil](https://recoiljs.org/) library for state management. It uses Recoil v0.1.2 and React v17.0.1.
 
 ## Demo
 
@@ -21,12 +21,18 @@ Go to http://localhost:3000 in the browser
 
 When using [Dev mode](https://reactjs.org/docs/optimizing-performance.html#use-the-production-build), Recoil performed much better than React Context. Using a grid of 20 x 100 cells, I clicked the "100" cell and pressed the "Up Arrow" key 9 times until the "10" cell was selected. The React Context grid gave 18% (724ms / 4002ms) Idle time during this interaction. The Recoil grid gave 93% (3708ms / 4002ms) Idle time.
 
-**Context Screenshot**
-![context screenshot](./img/context-dev-screenshot.png)
+**Context Screenshot (dev mode)**
+![context dev screenshot](./img/context-dev-screenshot.png)
 
-**Recoil Screenshot**
-![recoil screenshot](./img/recoil-dev-screenshot.png)
+**Recoil Screenshot (dev mode)**
+![recoil dev screenshot](./img/recoil-dev-screenshot.png)
 
 ### Production mode
 
-What's really important is performance in Production mode. I tried performing the same test using Production mode, but the Context and Recoil numbers looked similar. I tried increasing the grid size to 100 x 100 cells. The Context grid rendered fine, but the Recoil grid starting using a lot of memory and became unresponsive. I looked in the Recoil issues and found that memory leaks with `atomFamily` are a [known](https://github.com/facebookexperimental/Recoil/issues/366) [issue](https://github.com/facebookexperimental/Recoil/issues/471) and should be fixed by the next release. So I will leave this test as inconclusive until the memory leak issue is fixed.
+What's really important is performance in Production mode. I increased the grid size to 100 x 100 cells and performed the same test pressing the "Up Arrow" key 9 times. The React Context grid gave 64% (3180ms / 4932ms) Idle time during this interaction. The Recoil grid gave 60% (2951ms / 4931ms) Idle time. They performed about the same.
+
+**Context Screenshot (prod mode)**
+![context prod screenshot](./img/context-prod-screenshot.png)
+
+**Recoil Screenshot (prod mode)**
+![recoil prod screenshot](./img/recoil-prod-screenshot.png)
