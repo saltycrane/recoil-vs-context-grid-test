@@ -1,6 +1,6 @@
 # recoil-vs-context-grid-test
 
-This is an attempt to compare performance of a spreadsheet-like grid when using React Context vs. the [Recoil](https://recoiljs.org/) library for state management. It uses Recoil v0.1.2 and React v17.0.1.
+This is an attempt to compare performance of a spreadsheet-like grid when using React Context vs. the [Recoil](https://recoiljs.org/) library for state management. It uses Recoil v0.4.1 and React v17.0.2.
 
 ## Demo
 
