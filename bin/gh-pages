@@ -1,36 +1,8 @@
 #!/bin/sh
 
-# forked from https://gist.github.com/motemen/8595451
+# https://gist.github.com/joshuapekera/ef364073b01fb0e21d3f
+# push master branch before running this
 
 set -eux
 
-remote=$(git config remote.origin.url)
-described_rev=$(git rev-parse HEAD | git name-rev --stdin)
-
-pages_dir="./out"
-
-if [ ! -d "$pages_dir" ]
-then
-    echo "Error: $pages_dir directory does not exist"
-    exit 1
-fi
-
-cd "$pages_dir"
-
-cdup=$(git rev-parse --show-cdup)
-if [ "$cdup" != '' ]
-then
-    git init
-    git config user.email saltycrane@gmail.com
-    git remote add --fetch origin "$remote"
-fi
-
-# if `git checkout --orphan gh-pages` fails, need to delete the local and
-# remote gh-pages branches:
-# git branch -D gh-pages
-# git push origin --delete gh-pages
-git checkout --orphan gh-pages
-
-git add .
-git commit -m "github pages built at $described_rev"
-git push origin gh-pages
+git subtree push --prefix out origin gh-pages
