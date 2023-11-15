@@ -1,4 +1,4 @@
-import produce, { Draft } from "immer";
+import { produce, Draft } from "immer";
 import React, { Dispatch, createContext, useContext, useReducer } from "react";
 
 import Cell from "./Cell";
@@ -83,49 +83,47 @@ const initialState: TState = {
   },
 };
 
-const reducer = produce(
-  (draft: Draft<TState>, action: TAction): TState => {
-    switch (action.type) {
-      case "blur_cell":
-        if (isXYEqual(draft.activeCell.xy, action.xy)) {
-          draft.activeCell.mode = null;
-        }
-        return;
-      case "click_cell":
-        // clicking on the active cell does nothing
-        // (prevent exiting "editing" mode by clicking on it)
-        if (isXYEqual(draft.activeCell.xy, action.xy)) {
-          return;
-        }
-        draft.activeCell.mode = "active";
-        draft.activeCell.xy = action.xy;
-        return;
-      case "double_click_cell":
-        draft.activeCell.mode = "editing";
-        draft.activeCell.xy = action.xy;
-        return;
-      case "key_down_cell": {
-        switch (action.key) {
-          case "ArrowDown":
-          case "Enter":
-            draft = move(draft, "down");
-            return;
-          case "ArrowLeft":
-            draft = move(draft, "left");
-            return;
-          case "ArrowRight":
-          case "Tab":
-            draft = move(draft, "right");
-            return;
-          case "ArrowUp":
-            draft = move(draft, "up");
-            return;
-        }
+const reducer = produce((draft: Draft<TState>, action: TAction): TState => {
+  switch (action.type) {
+    case "blur_cell":
+      if (isXYEqual(draft.activeCell.xy, action.xy)) {
+        draft.activeCell.mode = null;
+      }
+      return;
+    case "click_cell":
+      // clicking on the active cell does nothing
+      // (prevent exiting "editing" mode by clicking on it)
+      if (isXYEqual(draft.activeCell.xy, action.xy)) {
         return;
       }
+      draft.activeCell.mode = "active";
+      draft.activeCell.xy = action.xy;
+      return;
+    case "double_click_cell":
+      draft.activeCell.mode = "editing";
+      draft.activeCell.xy = action.xy;
+      return;
+    case "key_down_cell": {
+      switch (action.key) {
+        case "ArrowDown":
+        case "Enter":
+          draft = move(draft, "down");
+          return;
+        case "ArrowLeft":
+          draft = move(draft, "left");
+          return;
+        case "ArrowRight":
+        case "Tab":
+          draft = move(draft, "right");
+          return;
+        case "ArrowUp":
+          draft = move(draft, "up");
+          return;
+      }
+      return;
     }
-  },
-);
+  }
+});
 
 /**
  * move the active cell left, right, down, or up

@@ -48,18 +48,14 @@ export default function Index() {
         Grid using Context:{" "}
         <span className="position-relative">
           <Link href={`/context?x=${colCount}&y=${rowCount}`}>
-            <a>
-              /context?colCount={colCount}&amp;rowCount={rowCount}
-            </a>
+            /context?colCount={colCount}&amp;rowCount={rowCount}
           </Link>
         </span>
       </p>
       <p className="mb-4">
         Grid using Recoil:{" "}
         <Link href={`/recoil?x=${colCount}&y=${rowCount}`}>
-          <a>
-            /recoil?colCount={colCount}&amp;rowCount={rowCount}
-          </a>
+          /recoil?colCount={colCount}&amp;rowCount={rowCount}
         </Link>
       </p>
       <p>
